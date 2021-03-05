@@ -1,0 +1,262 @@
+<head>
+  <title>Variant Squasher</title>
+  <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/donmccurdy/aframe-extras/v4.1.2/dist/aframe-extras.min.js"></script>
+  <script src="https://rawgit.com/wmurphyrd/aframe-super-hands-component/master/dist/super-hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.js"></script>
+  <script src="https://unpkg.com/aframe-event-set-component@^4.1.1/dist/aframe-event-set-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-physics-extras/dist/aframe-physics-extras.min.js"></script>
+  <script src="https://rawgit.com/feiss/aframe-environment-component/master/dist/aframe-environment-component.min.js"></script>
+  <script>
+    AFRAME.registerComponent("toggle-adjuster", {
+      schema: {
+        adjusting: { type: "boolean", default: false }
+      },
+      init: function() {
+        // this.adjusting = this.data.adjusting;
+      },
+
+      update: function() {
+        this.el.addEventListener("hover-start", function() {
+          this.adjusting = !this.adjusting;
+          var adjuster = document.querySelector("#adjuster");
+          var spawn = document.querySelector("#spawn");
+
+          if (this.adjusting) {
+            this.setAttribute("material", "color", "red");
+            adjuster.setAttribute("material", "opacity", "0.5");
+            adjuster.setAttribute("mixin", "dna");
+            spawn.setAttribute("material", "opacity", "0.5");
+          } else {
+            this.setAttribute("material", "color", "green");
+            adjuster.setAttribute("material", "opacity", "0");
+            adjuster.setAttribute("mixin", "");
+            spawn.setAttribute("material", "opacity", "0");
+          }
+        });
+      }
+    });
+
+    AFRAME.registerComponent("toggle-menu", {
+      schema: {
+        menu: { type: "boolean", default: false }
+      },
+      update: function() {
+        this.el.addEventListener("hover-start", function() {
+          this.menu = !this.menu;
+          var menu = document.querySelector("#menu-panel");
+          if (this.menu) {
+            this.setAttribute("material", "color", "red");
+            menu.setAttribute("visible", "true");
+          } else {
+            this.setAttribute("material", "color", "black");
+            menu.setAttribute("visible", "false");
+          }
+        });
+      }
+    });
+
+    AFRAME.registerComponent("change-height-up", {
+      update: function() {
+        this.el.addEventListener("hover-start", function() {
+          document.getElementById("adjuster").object3D.position.y += 0.1;
+        });
+      }
+    });
+
+    AFRAME.registerComponent("change-height-down", {
+      update: function() {
+        this.el.addEventListener("hover-start", function() {
+          document.getElementById("adjuster").object3D.position.y -= 0.1;
+        });
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <a-scene physics="gravity: 0;">
+    <!-- skybox <span>Photo by <a href="https://unsplash.com/@nci?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">National Cancer Institute</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>  -->
+      
+    <a-sky
+      src="assets/national-cancer-institute-zz_3tCcrk7o-unsplash.jpg"
+      color="#00005f"
+    ></a-sky>
+    <a-assets>
+      <a-mixin
+        id="sphere"
+        geometry="primitive: sphere;"
+        hoverable
+        grabbable
+        stretchable
+        draggable
+        event-set__hoveron="_event: hover-start; color: red;"
+        event-set__hoveroff="_event: hover-end; color: grey;"
+      ></a-mixin>
+      <a-mixin
+        id="menu"
+        geometry="primitive: cylinder;"
+        toggle-menu
+        hoverable
+        event-set__hoveron="_event: hover-start; color:#AA0000;"
+        event-set__hoveroff="_event: hover-end; color:#212121;"
+      ></a-mixin>
+      <a-mixin
+        id="btn"
+        geometry="primitive: box;"
+        toggle-adjuster
+        hoverable
+        event-set__hoveron="_event: hover-start"
+        event-set__hoveroff="_event: hover-end;"
+      ></a-mixin>
+      <a-mixin
+        id="up"
+        geometry="primitive: box;"
+        change-height-up
+        hoverable
+        event-set__hoveron="_event: hover-start; color: black;"
+        event-set__hoveroff="_event: hover-end; color: blue;"
+      ></a-mixin>
+      <a-mixin
+        id="down"
+        geometry="primitive: box;"
+        change-height-down
+        hoverable
+        event-set__hoveron="_event: hover-start; color: black;"
+        event-set__hoveroff="_event: hover-end; color: purple;"
+      ></a-mixin>
+      <a-mixin
+        id="dna"
+        geometry="primitive: torus;"
+        stretchable
+        event-set__hoveron="_event: hover-start; color:#AA0000"
+        event-set__hoveroff="_event: hover-end; color:#212121"
+      ></a-mixin>
+
+      <a-asset-item
+        mixin=""
+        id="circulardna"
+        src="assets/simpleCircleDna.gltf"
+        position="0 1 0"
+      ></a-asset-item>
+    </a-assets>
+    <a-entity>
+      <a-camera></a-camera>
+
+      <!--         left hand--->
+      <a-entity
+        static-body="shape: sphere; sphereRadius: 0.02;"
+        physics-collider
+        sphere-collider="objects: .interactable, grabbable, a-sphere, a-torus, #adjuster"
+        super-hands
+        hand-controls="hand: left"
+      >
+        <a-cylinder
+          id="menu-watch"
+          mixin="menu"
+          scale="0.045 0.05 0.045"
+          rotation="0 90 90"
+          position="0 0.01 0.12"
+          color="#212121"
+        ></a-cylinder>
+        <a-entity
+          id="menu-panel"
+          visible="false"
+          position="0 0 -0.15"
+          rotation="0 0 -50"
+        >
+          <a-box
+            rotation="0 0 5"
+            position="-0.2 -0.15 0"
+            scale="0.3 0.01 0.3"
+          ></a-box>
+
+          <a-entity
+            id="menu-text"
+            text="value: Adjust width; color: black; align: center;"
+            rotation="-90 90 0"
+            position="-0.3 -0.14 0"
+          ></a-entity>
+          <a-box
+            id="adjust-btn"
+            class="interactable"
+            mixin="btn"
+            color="green"
+            rotation="0 0 5"
+            position="-0.25 -0.13 0"
+            scale="0.04 0.04 0.04"
+          ></a-box>
+
+          <a-entity
+            id="menu-text-up"
+            text="value: up; color: black; align: center;"
+            rotation="-90 90 0"
+            position="-0.15 -0.14 -0.08"
+          ></a-entity>
+          <a-box
+            id="adjust-up"
+            class="interactable"
+            mixin="up"
+            color="blue"
+            rotation="0 0 5"
+            position="-0.1 -0.12 -0.08"
+            scale="0.04 0.04 0.04"
+          ></a-box>
+
+          <a-entity
+            id="menu-text-down"
+            text="value: down; color: black; align: center;"
+            rotation="-90 90 0"
+            position="-0.15 -0.14 0.08"
+          ></a-entity>
+          <a-box
+            id="adjust-down"
+            class="interactable"
+            mixin="down"
+            color="purple"
+            rotation="0 0 5"
+            position="-0.1 -0.12 0.08"
+            scale="0.04 0.04 0.04"
+          ></a-box>
+        </a-entity>
+      </a-entity>
+
+      <!--       right hand -->
+      <a-entity
+        static-body="shape: sphere; sphereRadius: 0.02;"
+        physics-collider
+        sphere-collider="objects: .interactable, a-sphere, a-torus, #menu-watch, #adjust-btn, #adjuster"
+        super-hands
+        hand-controls="hand: right"
+      ></a-entity>
+    </a-entity>
+    
+    <!--     models -->
+
+    <a-torus
+      id="adjuster"
+      position="0 1 0"
+      rotation="90 0 0"
+      radius="0.5"
+      radius-tubular="0.01"
+      material="opacity: 0.0; transparent: true; color: red;"
+    >
+      <a-entity
+        mixin=""
+        gltf-model="#circulardna"
+        rotation="0 90 0"
+        scale="1 1 1"
+        position="0 0 0"
+      ></a-entity>
+
+      <a-sphere
+        id="spawn"
+        mixin=""
+        rotation="0 0 0"
+        position="0 -0.5 0"
+        scale="0.05 0.05 0.05"
+        material="opacity: 0; transparent: true; color: grey;"
+      ></a-sphere>
+    </a-torus>
+  </a-scene>
+</body>
